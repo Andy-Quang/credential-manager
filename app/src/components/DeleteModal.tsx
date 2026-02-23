@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import React from 'react';
 
 interface DeleteModalProps {
@@ -6,9 +6,16 @@ interface DeleteModalProps {
   onClose: () => void;
   onConfirm: () => void;
   itemLabel: string;
+  isLoading?: boolean;
 }
 
-const DeleteModal: React.FC<DeleteModalProps> = ({ isOpen, onClose, onConfirm, itemLabel }) => {
+const DeleteModal: React.FC<DeleteModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  itemLabel,
+  isLoading = false 
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -26,14 +33,17 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ isOpen, onClose, onConfirm, i
           <div className="flex w-full gap-3">
             <button
               onClick={onClose}
-              className="flex-1 py-2.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium text-slate-700 dark:text-gray-200"
+              disabled={isLoading}
+              className="flex-1 py-2.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium text-slate-700 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-red-600/20 active:scale-95"
+              disabled={isLoading}
+              className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-red-600/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              {isLoading && <Loader2 className="animate-spin" size={18} />}
               Delete
             </button>
           </div>

@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import type { Credential } from '../types';
 
@@ -7,9 +7,16 @@ interface CredentialModalProps {
   onClose: () => void;
   onSubmit: (data: Partial<Credential>) => void;
   initialData?: Credential | null;
+  isLoading?: boolean;
 }
 
-const CredentialModal: React.FC<CredentialModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
+const CredentialModal: React.FC<CredentialModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  initialData,
+  isLoading = false 
+}) => {
   const [usedFor, setUsedFor] = useState('');
   const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +42,11 @@ const CredentialModal: React.FC<CredentialModalProps> = ({ isOpen, onClose, onSu
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">
             {initialData ? 'Edit Credential' : 'Add New Credential'}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">
+          <button 
+            onClick={onClose} 
+            disabled={isLoading}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <X size={20} />
           </button>
         </div>
@@ -50,7 +61,8 @@ const CredentialModal: React.FC<CredentialModalProps> = ({ isOpen, onClose, onSu
               type="text"
               value={usedFor}
               onChange={(e) => setUsedFor(e.target.value)}
-              className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-cyan-500 outline-none"
+              disabled={isLoading}
+              className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-cyan-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="e.g. Gmail, Amazon, etc."
               required
             />
@@ -61,7 +73,8 @@ const CredentialModal: React.FC<CredentialModalProps> = ({ isOpen, onClose, onSu
               type="text"
               value={account}
               onChange={(e) => setAccount(e.target.value)}
-              className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-cyan-500 outline-none"
+              disabled={isLoading}
+              className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-cyan-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Username or Email"
               required
             />
@@ -72,7 +85,8 @@ const CredentialModal: React.FC<CredentialModalProps> = ({ isOpen, onClose, onSu
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-cyan-500 outline-none"
+              disabled={isLoading}
+              className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-cyan-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               required
             />
           </div>
@@ -81,14 +95,17 @@ const CredentialModal: React.FC<CredentialModalProps> = ({ isOpen, onClose, onSu
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors font-medium text-slate-700 dark:text-gray-200"
+              disabled={isLoading}
+              className="flex-1 py-3 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors font-medium text-slate-700 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-600/20"
+              disabled={isLoading}
+              className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-600/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              {isLoading && <Loader2 className="animate-spin" size={18} />}
               {initialData ? 'Update' : 'Add'}
             </button>
           </div>

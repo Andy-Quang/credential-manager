@@ -1,5 +1,5 @@
 import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from 'firebase/firestore';
-import { Check, Copy, Edit2, LogOut, Moon, Plus, Search, SortAsc, SortDesc, Sun, Trash2 } from 'lucide-react';
+import { Check, Copy, Edit2, Loader2, LogOut, Moon, Plus, Search, SortAsc, SortDesc, Sun, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import type { Credential } from '../types';
@@ -19,9 +19,12 @@ const Dashboard: React.FC = () => {
   const [deletingCredential, setDeletingCredential] = useState<Credential | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
+    setIsDataLoading(true);
 
     const q = query(
       collection(db, 'credentials'),
@@ -35,6 +38,10 @@ const Dashboard: React.FC = () => {
         ...doc.data()
       })) as Credential[];
       setCredentials(data);
+      setIsDataLoading(false);
+    }, (error) => {
+      console.error("Error fetching credentials:", error);
+      setIsDataLoading(false);
     });
 
     return unsubscribe;
@@ -42,6 +49,7 @@ const Dashboard: React.FC = () => {
 
   const handleAdd = async (data: Partial<Credential>) => {
     if (!user) return;
+    setIsActionLoading(true);
     try {
       await addDoc(collection(db, 'credentials'), {
         ...data,
@@ -51,11 +59,14 @@ const Dashboard: React.FC = () => {
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const handleEdit = async (data: Partial<Credential>) => {
     if (!editingCredential) return;
+    setIsActionLoading(true);
     try {
       const docRef = doc(db, 'credentials', editingCredential.id);
       await updateDoc(docRef, data);
@@ -63,17 +74,22 @@ const Dashboard: React.FC = () => {
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deletingCredential) return;
+    setIsActionLoading(true);
     try {
       await deleteDoc(doc(db, 'credentials', deletingCredential.id));
       setIsDeleteModalOpen(false);
       setDeletingCredential(null);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -160,7 +176,16 @@ const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-              {filteredCredentials.length === 0 ? (
+              {isDataLoading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20">
+                    <div className="flex flex-col items-center justify-center gap-3 text-slate-400">
+                      <Loader2 className="animate-spin" size={32} />
+                      <p className="italic animate-pulse">Scanning the vault...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredCredentials.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-20 text-center text-slate-400 italic">
                     No credentials found. Start by adding one!
@@ -226,6 +251,7 @@ const Dashboard: React.FC = () => {
         }}
         onSubmit={editingCredential ? handleEdit : handleAdd}
         initialData={editingCredential}
+        isLoading={isActionLoading}
       />
 
       <DeleteModal
@@ -236,6 +262,7 @@ const Dashboard: React.FC = () => {
         }}
         onConfirm={handleDelete}
         itemLabel={deletingCredential?.usedFor || ''}
+        isLoading={isActionLoading}
       />
     </div>
   );
