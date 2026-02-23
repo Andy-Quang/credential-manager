@@ -1,6 +1,7 @@
 import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from 'firebase/firestore';
 import { Check, Copy, Edit2, Loader2, LogOut, Moon, Plus, Search, SortAsc, SortDesc, Sun, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { decryptPassword, encryptPassword } from '../lib/encryption';
 import { auth, db } from '../lib/firebase';
 import type { Credential } from '../types';
 import { useAuth } from './AuthProvider';
@@ -51,11 +52,13 @@ const Dashboard: React.FC = () => {
     if (!user) return;
     setIsActionLoading(true);
     try {
-      await addDoc(collection(db, 'credentials'), {
+      const encryptedData = {
         ...data,
+        password: data.password ? encryptPassword(data.password) : '',
         userId: user.uid,
         createdDate: Timestamp.now()
-      });
+      };
+      await addDoc(collection(db, 'credentials'), encryptedData);
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
@@ -69,7 +72,11 @@ const Dashboard: React.FC = () => {
     setIsActionLoading(true);
     try {
       const docRef = doc(db, 'credentials', editingCredential.id);
-      await updateDoc(docRef, data);
+      const updateData = { ...data };
+      if (updateData.password) {
+        updateData.password = encryptPassword(updateData.password);
+      }
+      await updateDoc(docRef, updateData);
       setEditingCredential(null);
       setIsModalOpen(false);
     } catch (err) {
@@ -94,7 +101,8 @@ const Dashboard: React.FC = () => {
   };
 
   const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
+    const decryptedPassword = decryptPassword(text);
+    navigator.clipboard.writeText(decryptedPassword);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -211,7 +219,7 @@ const Dashboard: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-5 text-slate-400 text-sm">
-                      {cred.createdDate?.toDate().toLocaleDateString() || 'N/A'}
+                      {cred.createdDate?.toDate().toLocaleDateString('en-GB').replace(/\//g, ' - ') || 'N/A'}
                     </td>
                     <td className="px-6 py-5 text-right space-x-2">
                       <button

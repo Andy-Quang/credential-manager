@@ -1,5 +1,6 @@
 import { Loader2, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { decryptPassword } from '../lib/encryption';
 import type { Credential } from '../types';
 
 interface CredentialModalProps {
@@ -25,7 +26,7 @@ const CredentialModal: React.FC<CredentialModalProps> = ({
     if (initialData) {
       setUsedFor(initialData.usedFor);
       setAccount(initialData.account);
-      setPassword(initialData.password);
+      setPassword(decryptPassword(initialData.password));
     } else {
       setUsedFor('');
       setAccount('');
@@ -79,7 +80,7 @@ const CredentialModal: React.FC<CredentialModalProps> = ({
               required
             />
           </div>
-          <div>
+          {!initialData &&  <div>
             <label className="block text-sm font-medium mb-1 text-slate-600 dark:text-slate-400">Password</label>
             <input
               type="password"
@@ -89,7 +90,8 @@ const CredentialModal: React.FC<CredentialModalProps> = ({
               className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-cyan-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               required
             />
-          </div>
+          </div>}
+          
           
           <div className="flex gap-3 mt-8">
             <button
