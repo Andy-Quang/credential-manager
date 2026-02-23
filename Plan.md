@@ -30,3 +30,6 @@ Main goal: I want to build a Website that can store and manage credentials. In o
 
 5. Deployment
 - Deploy on Vercel
+
+6. Updates
+- Refactored state management of the application: Extracted all Firebase logic, state handling, and data sorting/filtering from `Dashboard.tsx` into a custom `useCredentials` hook located in `/app/src/hooks`. This significantly improves the codebase structure and makes state management much cleaner.

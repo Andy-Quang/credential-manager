@@ -2,6 +2,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
+import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '../components/AuthProvider'
 import { ThemeProvider, useTheme } from '../components/ThemeProvider'
 
@@ -53,6 +54,7 @@ function RootContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Outlet />
         </div>
+        <Toaster position="bottom-right" />
         <TanStackDevtools
           config={{
             position: 'bottom-right',

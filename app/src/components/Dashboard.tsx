@@ -1,8 +1,8 @@
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from 'firebase/firestore';
 import { Check, Copy, Edit2, Loader2, LogOut, Moon, Plus, Search, SortAsc, SortDesc, Sun, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { decryptPassword, encryptPassword } from '../lib/encryption';
-import { auth, db } from '../lib/firebase';
+import React, { useState } from 'react';
+import { useCredentials } from '../hooks/useCredentials';
+import { decryptPassword } from '../lib/encryption';
+import { auth } from '../lib/firebase';
 import type { Credential } from '../types';
 import { useAuth } from './AuthProvider';
 import CredentialModal from './CredentialModal';
@@ -12,91 +12,54 @@ import { useTheme } from './ThemeProvider';
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [credentials, setCredentials] = useState<Credential[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+
+  const {
+    credentials: filteredCredentials,
+    searchTerm,
+    setSearchTerm,
+    sortOrder,
+    setSortOrder,
+    isDataLoading,
+    isActionLoading,
+    addCredential,
+    editCredential,
+    removeCredential
+  } = useCredentials(user?.uid);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingCredential, setEditingCredential] = useState<Credential | null>(null);
   const [deletingCredential, setDeletingCredential] = useState<Credential | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [isActionLoading, setIsActionLoading] = useState(false);
-  const [isDataLoading, setIsDataLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-    setIsDataLoading(true);
-
-    const q = query(
-      collection(db, 'credentials'),
-      where('userId', '==', user.uid),
-      orderBy('usedFor', sortOrder)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Credential[];
-      setCredentials(data);
-      setIsDataLoading(false);
-    }, (error) => {
-      console.error("Error fetching credentials:", error);
-      setIsDataLoading(false);
-    });
-
-    return unsubscribe;
-  }, [user, sortOrder]);
 
   const handleAdd = async (data: Partial<Credential>) => {
-    if (!user) return;
-    setIsActionLoading(true);
     try {
-      const encryptedData = {
-        ...data,
-        password: data.password ? encryptPassword(data.password) : '',
-        userId: user.uid,
-        createdDate: Timestamp.now()
-      };
-      await addDoc(collection(db, 'credentials'), encryptedData);
+      await addCredential(data);
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
-    } finally {
-      setIsActionLoading(false);
     }
   };
 
   const handleEdit = async (data: Partial<Credential>) => {
     if (!editingCredential) return;
-    setIsActionLoading(true);
     try {
-      const docRef = doc(db, 'credentials', editingCredential.id);
-      const updateData = { ...data };
-      if (updateData.password) {
-        updateData.password = encryptPassword(updateData.password);
-      }
-      await updateDoc(docRef, updateData);
+      await editCredential(editingCredential.id, data);
       setEditingCredential(null);
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
-    } finally {
-      setIsActionLoading(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deletingCredential) return;
-    setIsActionLoading(true);
     try {
-      await deleteDoc(doc(db, 'credentials', deletingCredential.id));
+      await removeCredential(deletingCredential.id);
       setIsDeleteModalOpen(false);
       setDeletingCredential(null);
     } catch (err) {
       console.error(err);
-    } finally {
-      setIsActionLoading(false);
     }
   };
 
@@ -106,10 +69,6 @@ const Dashboard: React.FC = () => {
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
-
-  const filteredCredentials = credentials.filter(c =>
-    c.usedFor.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="py-8">
