@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "486183234078",
+    "firebase_url": "https://credential-manager-e44cc-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "credential-manager-e44cc",
+    "storage_bucket": "credential-manager-e44cc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486183234078:android:6678ed449bcf1e4f2d1c0f",
+        "android_client_info": {
+          "package_name": "com.mobileapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmw4Ir_j6p2XO4fUfup5X9VL25wwQDfgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
